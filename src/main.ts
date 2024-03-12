@@ -1,9 +1,18 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import path from 'path';
-import { activeSetting, getDonationsSetting, getUserStatus, getLiveSetting, getCategory, setLiveSetting } from './main/chzzkApi';
+import { app, BrowserWindow, ipcMain } from "electron";
+import path from "path";
+import {
+  activeSetting,
+  getDonationsSetting,
+  getUserStatus,
+  getLiveSetting,
+  getCategory,
+  setLiveSetting,
+} from "./main/chzzkApi";
+import { updateElectronApp } from "update-electron-app";
+updateElectronApp(); // additional configuration options available
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
+if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
@@ -24,12 +33,14 @@ const createWindow = () => {
     title: "치지직 스트리머 도우미",
     // resizable: false,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       webviewTag: true,
       webSecurity: false,
     },
   });
-  mainWindow.webContents.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Whale/3.24.223.21 Safari/537.36");
+  mainWindow.webContents.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Whale/3.24.223.21 Safari/537.36"
+  );
   // mainWindow.webContents.session.webRequest.onBeforeSendHeaders({urls: ["https://comm-api.game.naver.com/nng_main/v1/user/getUserStatus"]}, (details, callback) => {
   //   if (mainWindow.webContents.id === details.webContentsId) {
   //     console.log(details.webContentsId);
@@ -60,7 +71,9 @@ const createWindow = () => {
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
       mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
     } else {
-      mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+      mainWindow.loadFile(
+        path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
+      );
     }
   });
 
@@ -68,7 +81,9 @@ const createWindow = () => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+    mainWindow.loadFile(
+      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
+    );
   }
 
   // Open the DevTools.
@@ -78,18 +93,18 @@ const createWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on("ready", createWindow);
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
