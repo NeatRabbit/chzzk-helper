@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: yarn ci
+      - run: yarn install --frozen-lockfile
       - name: Publish app
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
