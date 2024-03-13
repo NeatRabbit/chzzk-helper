@@ -6,7 +6,7 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 const config: ForgeConfig = {
   packagerConfig: {
-    asar: false,
+    asar: true,
     icon: "public/icon"
   },
   rebuildConfig: {},
@@ -47,7 +47,7 @@ const config: ForgeConfig = {
   ],
   publishers: [
     {
-      name: 'chzzk-helper',
+      name: '@electron-forge/publisher-github',
       config: {
         repository: {
           owner: 'me',
