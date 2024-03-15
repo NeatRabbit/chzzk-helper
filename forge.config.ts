@@ -117,8 +117,8 @@ const config: ForgeConfig = {
       name: "@electron-forge/publisher-github",
       config: {
         repository: {
-          owner: "me",
-          name: "NeatRabbit",
+          owner: "NeatRabbit",
+          name: "chzzk-helper",
         },
         prerelease: true,
       },
