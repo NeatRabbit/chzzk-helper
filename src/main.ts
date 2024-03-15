@@ -24,6 +24,7 @@ const createWindow = () => {
   ipcMain.handle("getCategory", getCategory);
   ipcMain.handle("setLiveSetting", setLiveSetting);
 
+  console.log(__dirname);
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     icon: "public/icon.png",
@@ -38,31 +39,10 @@ const createWindow = () => {
       webSecurity: false,
     },
   });
+  mainWindow.setMenu(null);
   mainWindow.webContents.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Whale/3.24.223.21 Safari/537.36"
   );
-  // mainWindow.webContents.session.webRequest.onBeforeSendHeaders({urls: ["https://comm-api.game.naver.com/nng_main/v1/user/getUserStatus"]}, (details, callback) => {
-  //   if (mainWindow.webContents.id === details.webContentsId) {
-  //     console.log(details.webContentsId);
-  //     details.requestHeaders["Origin"] = "https://chzzk.naver.com";
-  //     details.requestHeaders["Referer"] = "https://chzzk.naver.com";
-  //     details.requestHeaders["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Whale/3.24.223.21 Safari/537.36";
-  //   }
-
-  //   callback({requestHeaders: details.requestHeaders});
-  // });
-  // mainWindow.webContents.session.webRequest.onHeadersReceived({urls: ["https://comm-api.game.naver.com/nng_main/v1/user/getUserStatus"]}, (details, callback) => {
-  //   const responseHeaders = {...details.responseHeaders}
-  //   if (mainWindow.webContents.id === details.webContentsId) {
-  //     responseHeaders["Access-Control-Allow-Origin"] = ["*"];
-  //   }
-  //   console.log(responseHeaders["Access-Control-Allow-Origin"]);
-
-  //   callback({responseHeaders});
-  // });
-  // mainWindow.webContents.addListener("will-frame-navigate", (details) => {
-  //   console.log(details.frame.origin);
-  // })
 
   mainWindow.webContents.addListener("will-navigate", async (details) => {
     if (details.url !== "https://chzzk.naver.com/") return;
@@ -86,8 +66,10 @@ const createWindow = () => {
     );
   }
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  if (process.env.NODE_ENV === "development") {
+    // Open the DevTools.
+    mainWindow.webContents.openDevTools();
+  }
 };
 
 // This method will be called when Electron has finished

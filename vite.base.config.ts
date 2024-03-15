@@ -13,6 +13,7 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
   return {
     root,
     mode,
+    publicDir: "public",
     build: {
       // Prevent multiple builds from interfering with each other.
       emptyOutDir: false,
