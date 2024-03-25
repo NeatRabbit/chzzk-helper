@@ -8,7 +8,7 @@ import useUserIdHash from "../electronApi/useUserIdHash";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function LiveSetting() {
-  const { useGetLiveSetting } = useLiveSetting();
+  const { useGetLiveSetting, setLiveSetting } = useLiveSetting();
   const { data: {content: {userIdHash}} } = useUserIdHash();
   const { data, mutate, isLoading } = useGetLiveSetting();
   const [liveTitle, setLiveTitle] = useState("");
@@ -18,6 +18,7 @@ export default function LiveSetting() {
     categoryType: null,
   });
   const [adult, setAdult] = useState(false);
+  const [paidPromotion, setPaidPromotion] = useState(false);
   const {toast} = useToast();
 
   const onChangeSelected = (value: Category) => {
@@ -27,6 +28,7 @@ export default function LiveSetting() {
   useEffect(() => {
     setLiveTitle(data?.content.defaultLiveTitle || "");
     setAdult(!!data?.content.adult);
+    setPaidPromotion(!!data?.content.paidPromotion);
   }, [data])
 
   const onSubmit = async () => {
@@ -34,30 +36,14 @@ export default function LiveSetting() {
       toast({description: "방송 제목을 입력해주세요.", variant: "destructive"});
       return;
     }
-    const {chatActive, chatAvailableCondition, chatAvailableGroup, defaultThumbnailImageUrl, minFollowerMinute, paidPromotion} = data.content;
-    const {code, content} = await window.electronApi.setLiveSetting(userIdHash, {
+    
+    await setLiveSetting({mutate, data, liveSetting: {
       adult,
       defaultLiveTitle: liveTitle,
       liveCategory: categorySelected.value,
       categoryType: categorySelected.categoryType,
-      chatActive,
-      chatAvailableCondition,
-      chatAvailableGroup,
-      defaultThumbnailImageUrl,
-      minFollowerMinute,
       paidPromotion,
-    });
-    
-    if (code === 200) {
-      mutate({
-        ...data,
-        content: {
-          ...data.content,
-          ...content,
-        }
-      });
-      toast({description: "방송 정보 변경", duration: 1000});
-    }
+    }});
   }
 
   return !isLoading && (
@@ -71,6 +57,15 @@ export default function LiveSetting() {
         onChange={(e) => setLiveTitle(e.target.value)}
       />
       <CategorySelector onChangeSelected={onChangeSelected} />
+      <Toggle
+        defaultChecked={data?.content?.adult}
+        pressed={paidPromotion}
+        onPressedChange={setPaidPromotion}
+        variant="outline"
+        className="text-nowrap hover:bg-inherit data-[state=on]:bg-primary"
+      >
+        유료
+      </Toggle>
       <Toggle
         defaultChecked={data?.content?.adult}
         pressed={adult}

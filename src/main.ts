@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, session } from "electron";
 import path from "path";
 import {
   activeSetting,
@@ -7,6 +7,8 @@ import {
   getLiveSetting,
   getCategory,
   setLiveSetting,
+  commandSkip,
+  connectWebsocket,
 } from "./main/chzzkApi";
 import { updateElectronApp } from "update-electron-app";
 updateElectronApp(); // additional configuration options available
@@ -16,6 +18,10 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
+async function logOut() {
+  return session.defaultSession.clearStorageData();
+}
+
 const createWindow = () => {
   ipcMain.handle("getUserStatus", getUserStatus);
   ipcMain.handle("getDonationsSetting", getDonationsSetting);
@@ -23,16 +29,18 @@ const createWindow = () => {
   ipcMain.handle("getLiveSetting", getLiveSetting);
   ipcMain.handle("getCategory", getCategory);
   ipcMain.handle("setLiveSetting", setLiveSetting);
+  ipcMain.handle("commandSkip", commandSkip);
+  ipcMain.handle("connectWebsocket", connectWebsocket);
+  ipcMain.handle("logOut", logOut);
 
-  console.log(__dirname);
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    icon: "public/icon.png",
     width: 913,
-    height: 645,
+    height: 685,
+    // height: 725,
+    icon: "public/icon.png",
     useContentSize: true,
     title: "치지직 스트리머 도우미",
-    // resizable: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       webviewTag: true,
