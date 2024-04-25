@@ -1,7 +1,7 @@
 {
   "name": "chzzk-helper",
   "productName": "chzzk-helper",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
   "repository": "github:NeatRabbit/chzzk-helper",
@@ -29,6 +29,8 @@
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-toggle": "^1.0.3",
+    "@radix-ui/react-alert-dialog": "^1.0.5",
+    "@radix-ui/react-select": "^2.0.0",
     "@types/react": "^18.2.60",
     "@types/react-dom": "^18.2.19",
     "@types/socket.io-client": "^1.4.36",
@@ -74,8 +76,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@radix-ui/react-alert-dialog": "^1.0.5",
-    "@radix-ui/react-select": "^2.0.0",
     "electron-squirrel-startup": "^1.0.0",
     "fuse.js": "^7.0.0",
     "update-electron-app": "^3.0.0"
