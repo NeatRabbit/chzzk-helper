@@ -1,19 +1,18 @@
 import { Switch } from "@/components/ui/switch";
 import useDonationsSetting from "../electronApi/useDonationsSetting";
 import useActiveSetting from "../electronApi/useActiveSetting";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 export default function ChatDonationSwitch() {
   const { data, isLoading } = useDonationsSetting();
   const { activeSetting } = useActiveSetting();
-  const {toast} = useToast();
 
   const onChangeChatDonation = async (checked: boolean) => {
     await activeSetting({
       active: checked,
       donationType: "CHAT",
     });
-    toast({description: `채팅 후원 ${checked ? "ON" : "OFF"}`, duration: 1000});
+    toast.success(`채팅 후원 ${checked ? "ON" : "OFF"}`);
   };
 
   return isLoading ? (

@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Toggle } from "@/components/ui/toggle";
 import useUserIdHash from "../electronApi/useUserIdHash";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner"
+import TagSelector from "./tagSelector";
+import TagList from "./tagList";
 
 export default function LiveSetting() {
   const { useGetLiveSetting, setLiveSetting } = useLiveSetting();
@@ -19,7 +21,7 @@ export default function LiveSetting() {
   });
   const [adult, setAdult] = useState(false);
   const [paidPromotion, setPaidPromotion] = useState(false);
-  const {toast} = useToast();
+  const [tags, setTags] = useState<string[]>([]);
 
   const onChangeSelected = (value: Category) => {
     setCategorySelected(value);
@@ -29,11 +31,12 @@ export default function LiveSetting() {
     setLiveTitle(data?.content.defaultLiveTitle || "");
     setAdult(!!data?.content.adult);
     setPaidPromotion(!!data?.content.paidPromotion);
+    setTags(data?.content.tags || []);
   }, [data])
 
   const onSubmit = async () => {
     if (!liveTitle) {
-      toast({description: "방송 제목을 입력해주세요.", variant: "destructive"});
+      toast.error("방송 제목을 입력해주세요.");
       return;
     }
     
@@ -43,38 +46,58 @@ export default function LiveSetting() {
       liveCategory: categorySelected.value,
       categoryType: categorySelected.categoryType,
       paidPromotion,
+      tags,
     }});
   }
 
   return !isLoading && (
     <div className="flex items-center w-full gap-2 overflow-hidden">
-      <Input
-        type="text"
-        className="ml-2"
-        placeholder="방송 제목"
-        title="방송 제목"
-        value={liveTitle}
-        onChange={(e) => setLiveTitle(e.target.value)}
-      />
-      <CategorySelector onChangeSelected={onChangeSelected} />
-      <Toggle
-        defaultChecked={data?.content?.adult}
-        pressed={paidPromotion}
-        onPressedChange={setPaidPromotion}
-        variant="outline"
-        className="text-nowrap hover:bg-inherit data-[state=on]:bg-primary"
-      >
-        유료
-      </Toggle>
-      <Toggle
-        defaultChecked={data?.content?.adult}
-        pressed={adult}
-        onPressedChange={setAdult}
-        variant="outline"
-        className="text-nowrap hover:bg-inherit data-[state=on]:bg-red-700"
-      >
-        19금
-      </Toggle>
+      <div className="flex-1 overflow-hidden">
+        <div className="flex items-center w-full gap-2 overflow-hidden">
+          <Input
+            type="text"
+            className="ml-2"
+            placeholder="방송 제목"
+            title="방송 제목"
+            value={liveTitle}
+            onChange={(e) => setLiveTitle(e.target.value)}
+          />
+          <CategorySelector onChangeSelected={onChangeSelected} />
+          <Toggle
+            defaultChecked={data?.content?.adult}
+            pressed={paidPromotion}
+            onPressedChange={setPaidPromotion}
+            variant="outline"
+            className="text-nowrap hover:bg-inherit data-[state=on]:bg-primary"
+          >
+            유료
+          </Toggle>
+          <Toggle
+            defaultChecked={data?.content?.adult}
+            pressed={adult}
+            onPressedChange={setAdult}
+            variant="outline"
+            className="text-nowrap hover:bg-inherit data-[state=on]:bg-red-700"
+          >
+            19금
+          </Toggle>
+        </div>
+        <div className="flex items-center w-full gap-2 mt-2 overflow-hidden flex-1">
+          <TagSelector className="ml-2" onAddTag={(tag) => {
+            if (tags.length > 4) {
+              toast.error("태그는 최대 5개까지만 추가할 수 있습니다.");
+              return;
+            }
+            const newSet = new Set([...tags, tag]);
+            setTags(Array.from(newSet));
+          }} />
+          <TagList tags={tags} onClickRemove={(tag) => {
+            const newSet = new Set(tags);
+            newSet.delete(tag);
+            setTags(Array.from(newSet));
+          }} />
+        </div>
+      </div>
       <Button className="font-bold" onClick={onSubmit}>저장</Button>
     </div>
   );

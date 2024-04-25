@@ -86,12 +86,12 @@ export default function CategorySelector({onChangeSelected}: {onChangeSelected: 
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Category>({value: null, label: "", categoryType: null});
-  const [lounges, setLounges] = useState([] as CategoryResponse["content"]["lounges"]);
+  const [categories, setCategories] = useState([] as CategoryResponse["content"]["results"]);
 
   useEffect(() => {
     setSelected({
-      value: data?.content?.category?.liveCategory,
-      label: data?.content?.category?.liveCategoryName,
+      value: data?.content?.category?.categoryId,
+      label: data?.content?.category?.categoryValue,
       categoryType: data?.content?.category?.categoryType,
     });
   }, [data]);
@@ -103,7 +103,7 @@ export default function CategorySelector({onChangeSelected}: {onChangeSelected: 
   const {data: categoryData} = useGetCategory(search);
 
   useEffect(() => {
-    setLounges(categoryData?.content?.lounges || []);
+    setCategories(categoryData?.content?.results || []);
   }, [categoryData]);
 
   return (
@@ -156,22 +156,22 @@ export default function CategorySelector({onChangeSelected}: {onChangeSelected: 
                   </CommandItem>
                 )
               })}
-              {lounges.map((lounge) => (
+              {categories.map((category) => (
                 <CommandItem
-                  key={lounge.loungeId}
-                  value={lounge.loungeId}
-                  keywords={[lounge.loungeName]}
+                  key={category.categoryId}
+                  value={category.categoryId}
+                  keywords={[category.categoryValue]}
                   onSelect={(currentValue) => {
                     setSelected({
                       value: currentValue,
-                      label: lounge.loungeName,
+                      label: category.categoryValue,
                       categoryType: "GAME",
                     });
                     setOpen(false);
                   }}
                 >
-                  <img src={lounge.logoImageSquareUrl} className="mr-2 h-4 w-4 object-cover" />
-                  <span>{lounge.loungeName}</span>
+                  <img src={category.posterImageUrl} className="mr-2 h-4 w-4 object-cover" />
+                  <span>{category.categoryValue}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

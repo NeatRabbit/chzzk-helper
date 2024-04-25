@@ -1,12 +1,14 @@
 import useSWR, { KeyedMutator } from "swr";
 import useUserIdHash from "./useUserIdHash";
 import { LiveSettingOptions, LiveSettingResponse } from "@/main/chzzkApi";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const getLiveSettingFetcher = ([userIdHash]: [string, string]) =>
   window.electronApi.getLiveSetting(userIdHash);
 const getCategoryFetcher = ([searchString]: [string, string]) =>
   window.electronApi.getCategory(encodeURI(searchString));
+const getTagFetcher = ([searchString]: [string, string]) =>
+  window.electronApi.getTag(encodeURI(searchString));
 
 export default function useLiveSetting() {
   const { data } = useUserIdHash();
@@ -19,6 +21,8 @@ export default function useLiveSetting() {
       ),
     useGetCategory: (searchString: string) =>
       useSWR([searchString, "useGetCategory"], getCategoryFetcher),
+    useGetTag: (searchString: string) =>
+      useSWR([searchString, "useGetTag"], getTagFetcher),
     setLiveSetting: async ({
       mutate,
       data: liveSettingData,
@@ -38,13 +42,14 @@ export default function useLiveSetting() {
         defaultThumbnailImageUrl,
         minFollowerMinute,
         paidPromotion,
+        tags,
       } = liveSettingData.content;
 
       const { code, content } = await window.electronApi.setLiveSetting(
         data.content.userIdHash,
         {
           adult,
-          liveCategory: category.liveCategory,
+          liveCategory: category.categoryId,
           categoryType: category.categoryType,
           chatActive,
           chatAvailableCondition,
@@ -53,6 +58,7 @@ export default function useLiveSetting() {
           defaultThumbnailImageUrl,
           minFollowerMinute,
           paidPromotion,
+          tags,
           ...liveSetting,
         }
       );
@@ -64,7 +70,7 @@ export default function useLiveSetting() {
             ...content,
           },
         });
-        toast({ description: "방송 정보 변경", duration: 1000 });
+        toast.success("방송 정보 변경");
       }
     },
   };

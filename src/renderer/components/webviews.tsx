@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Minus, PanelLeftClose, PanelLeftOpen, Plus } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { useSetting } from "./settingProvider";
+import OnAir from "./onair";
 
 export default function Webviews() {
   const chatRef = useRef(null);
@@ -19,7 +20,6 @@ export default function Webviews() {
     },
   } = useUserIdHash();
   const {theme} = useTheme();
-  const [collapse, setCollapse] = useState(false);
   const {setting, setSetting} = useSetting();
   const cssKey = useRef("");
   const changeZoom = async (zoomIn: boolean) => {
@@ -112,6 +112,9 @@ export default function Webviews() {
           className="border-0 h-full"
           style={{ marginRight: setting.remoteCollapse ? "-220px" : "0" }}
         ></webview>
+        <div className="absolute top-0 h-10 flex items-center" style={{right: setting.remoteCollapse ? "48px" : "268px"}}>
+          <OnAir />
+        </div>
         <Button
           size="icon"
           className="absolute top-0"

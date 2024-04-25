@@ -4,15 +4,18 @@
 import { contextBridge, ipcRenderer } from "electron";
 import {
   DonationsSetting,
+  chzzkResponse,
   UserStatus,
   ActiveSettingOption,
-  chzzkResponse,
   LiveSettingResponse,
   CategoryResponse,
   LiveSettingOptions,
   SessionUrlResponse,
   StreamingInfoResponse,
   NewsFeed,
+  LiveDetailResponse,
+  NewsFeedResponse,
+  TagResponse,
 } from "./main/chzzkApi";
 
 declare global {
@@ -42,16 +45,23 @@ const exposes = {
     ipcRenderer.invoke("setLiveSetting", userIdHash, options),
   getSessionUrl: async (id: string): Promise<SessionUrlResponse> =>
     ipcRenderer.invoke("getSessionUrl", id),
-  getStreamingInfo: async (userIdHash: string): Promise<StreamingInfoResponse> =>
+  getStreamingInfo: async (
+    userIdHash: string
+  ): Promise<StreamingInfoResponse> =>
     ipcRenderer.invoke("getStreamingInfo", userIdHash),
-  logOut: async () =>
-    ipcRenderer.invoke("logOut"),
+  logOut: async () => ipcRenderer.invoke("logOut"),
   connectWebsocket: async (userIdHash: string) =>
     ipcRenderer.invoke("connectWebsocket", userIdHash),
+  getNewsFeed: async (userIdHash: string, newsFeedNo?: number): Promise<NewsFeedResponse> => 
+    ipcRenderer.invoke("getNewsFeed", userIdHash, newsFeedNo),
   onNewsFeed: (callback: (value: NewsFeed) => void) => {
     ipcRenderer.removeAllListeners("newsFeed");
-    ipcRenderer.on("newsFeed", (_event, value: NewsFeed) => callback(value))
+    ipcRenderer.on("newsFeed", (_event, value: NewsFeed) => callback(value));
   },
+  getLiveDetail: async (userIdHash: string): Promise<LiveDetailResponse> =>
+    ipcRenderer.invoke("getLiveDetail", userIdHash),
+  getTag: async (searchString: string): Promise<TagResponse> =>
+    ipcRenderer.invoke("getTag", searchString),
 };
 
 contextBridge.exposeInMainWorld("electronApi", exposes);

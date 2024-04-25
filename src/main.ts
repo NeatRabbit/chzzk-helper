@@ -9,6 +9,9 @@ import {
   setLiveSetting,
   commandSkip,
   connectWebsocket,
+  getLiveDetail,
+  getNewsFeed,
+  getTag,
 } from "./main/chzzkApi";
 import { updateElectronApp } from "update-electron-app";
 updateElectronApp(); // additional configuration options available
@@ -32,6 +35,9 @@ const createWindow = () => {
   ipcMain.handle("commandSkip", commandSkip);
   ipcMain.handle("connectWebsocket", connectWebsocket);
   ipcMain.handle("logOut", logOut);
+  ipcMain.handle("getLiveDetail", getLiveDetail);
+  ipcMain.handle("getNewsFeed", getNewsFeed);
+  ipcMain.handle("getTag", getTag);
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
