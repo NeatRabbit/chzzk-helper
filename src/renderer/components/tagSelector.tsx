@@ -5,6 +5,7 @@ import { clsx } from "clsx";
 import { Button } from "@/components/ui/button";
 import {
   Command,
+  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -53,28 +54,33 @@ export default function TagSelector({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0">
-        <Command>
+        <Command
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.ctrlKey) {
+              e.preventDefault();
+            }
+          }}
+        >
           <CommandInput
-            placeholder="태그 검색 (Enter시에 태그 추가)"
+            placeholder="태그 검색 (Ctrl+Enter시에 태그 추가)"
             value={search}
             maxLength={15}
             onValueChange={setSearch}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === "Enter" && e.ctrlKey) {
                 onAddTag(search);
               }
             }}
           />
           <CommandList>
-            {/* <CommandEmpty>검색결과가 없습니다.</CommandEmpty> */}
+            <CommandEmpty>검색결과가 없습니다.</CommandEmpty>
             <CommandGroup>
               {tags.map((tag) => (
                 <CommandItem
                   key={tag}
                   value={tag}
                   onSelect={(currentValue) => {
-                    onAddTag(currentValue)
-                    setOpen(false);
+                    onAddTag(currentValue);
                   }}
                 >
                   <span>{tag}</span>
