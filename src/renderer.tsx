@@ -31,6 +31,16 @@ import App from "./renderer/App";
 
 import "./index.css";
 
+window.electronApi.onSaveWindowPosition((bounds) => {
+  localStorage.setItem("windowPosition", JSON.stringify(bounds));
+});
+
+const windowPosition = localStorage.getItem("windowPosition");
+
+if (windowPosition) {
+  window.electronApi.setWindowPosition(JSON.parse(windowPosition));
+}
+
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />

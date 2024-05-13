@@ -16,6 +16,8 @@ import {
   LiveDetailResponse,
   NewsFeedResponse,
   TagResponse,
+  DonationsCommandResponse,
+  DonationsCommand,
 } from "./main/chzzkApi";
 
 declare global {
@@ -50,9 +52,12 @@ const exposes = {
   ): Promise<StreamingInfoResponse> =>
     ipcRenderer.invoke("getStreamingInfo", userIdHash),
   logOut: async () => ipcRenderer.invoke("logOut"),
-  connectWebsocket: async (userIdHash: string) =>
-    ipcRenderer.invoke("connectWebsocket", userIdHash),
-  getNewsFeed: async (userIdHash: string, newsFeedNo?: number): Promise<NewsFeedResponse> => 
+  connectWebsocket: async (newsFeedSessionIOChannelId: string) =>
+    ipcRenderer.invoke("connectWebsocket", newsFeedSessionIOChannelId),
+  getNewsFeed: async (
+    userIdHash: string,
+    newsFeedNo?: number
+  ): Promise<NewsFeedResponse> =>
     ipcRenderer.invoke("getNewsFeed", userIdHash, newsFeedNo),
   onNewsFeed: (callback: (value: NewsFeed) => void) => {
     ipcRenderer.removeAllListeners("newsFeed");
@@ -62,6 +67,20 @@ const exposes = {
     ipcRenderer.invoke("getLiveDetail", userIdHash),
   getTag: async (searchString: string): Promise<TagResponse> =>
     ipcRenderer.invoke("getTag", searchString),
+  openChatCustomWindow: (chatSourceHash: string) =>
+    ipcRenderer.invoke("openChatCustomWindow", chatSourceHash),
+  donationsCommand: async ({
+    channelId,
+    command,
+    donationId,
+  }: DonationsCommand): Promise<DonationsCommandResponse> =>
+    ipcRenderer.invoke("donationsCommand", { channelId, command, donationId }),
+  onSaveWindowPosition: (callback: (bounds: Electron.Rectangle) => void) =>
+    ipcRenderer.on("saveWindowPosition", (_event, bounds: Electron.Rectangle) =>
+      callback(bounds)
+    ),
+  setWindowPosition: (bounds: Electron.Rectangle) =>
+    ipcRenderer.invoke("setWindowPosition", bounds),
 };
 
 contextBridge.exposeInMainWorld("electronApi", exposes);

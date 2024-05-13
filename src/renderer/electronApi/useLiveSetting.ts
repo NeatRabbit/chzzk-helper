@@ -43,6 +43,7 @@ export default function useLiveSetting() {
         minFollowerMinute,
         paidPromotion,
         tags,
+        clipActive,
       } = liveSettingData.content;
 
       const { code, content } = await window.electronApi.setLiveSetting(
@@ -59,6 +60,7 @@ export default function useLiveSetting() {
           minFollowerMinute,
           paidPromotion,
           tags,
+          clipActive,
           ...liveSetting,
         }
       );

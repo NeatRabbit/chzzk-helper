@@ -2,7 +2,7 @@
   "name": "chzzk-helper",
   "productName": "chzzk-helper",
   "version": "0.0.3",
-  "description": "My Electron application description",
+  "description": "Chzzk streamer helper",
   "main": ".vite/build/main.js",
   "repository": "github:NeatRabbit/chzzk-helper",
   "scripts": {
@@ -20,17 +20,17 @@
     "@electron-forge/plugin-vite": "^7.3.0",
     "@electron-forge/publisher-github": "^7.3.0",
     "@electron/fuses": "^1.7.0",
+    "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-menubar": "^1.0.4",
     "@radix-ui/react-popover": "^1.0.7",
+    "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-toggle": "^1.0.3",
-    "@radix-ui/react-alert-dialog": "^1.0.5",
-    "@radix-ui/react-select": "^2.0.0",
     "@types/react": "^18.2.60",
     "@types/react-dom": "^18.2.19",
     "@types/socket.io-client": "^1.4.36",
@@ -44,7 +44,7 @@
     "clsx": "^2.1.0",
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
-    "electron": "29.1.0",
+    "electron": "^30.0.3",
     "eslint": "^8.0.1",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
@@ -72,7 +72,7 @@
   "keywords": [],
   "author": {
     "name": "NeatRabbit",
-    "email": "neatrabbit@gmail.com"
+    "email": "siro@usagi.space"
   },
   "license": "MIT",
   "dependencies": {

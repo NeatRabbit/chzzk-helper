@@ -116,7 +116,8 @@ export interface LiveSettingResponse extends chzzkResponse {
     adult: boolean;
     chatAvailableCondition: string;
     minFollowerMinute: number;
-    tags: string[],
+    tags: string[];
+    clipActive: boolean;
   };
 }
 
@@ -144,6 +145,7 @@ export interface LiveSettingOptions {
   chatAvailableCondition: string;
   minFollowerMinute: number;
   tags: string[];
+  clipActive: boolean;
 }
 
 export const setLiveSetting = async (
@@ -220,7 +222,8 @@ export interface StreamingInfoResponse extends chzzkResponse {
   };
 }
 
-const getStreamingInfo = (
+export const getStreamingInfo = (
+  _: IpcMainEvent,
   userIdHash: string
 ): Promise<StreamingInfoResponse> => {
   if (!userIdHash) throw Error("No userIdHash");
@@ -307,14 +310,11 @@ export interface NewsFeed {
 
 export const connectWebsocket = async (
   event: IpcMainEvent,
-  userIdHash: string
+  newsFeedSessionIOChannelId: string
 ) => {
-  if (!userIdHash) throw Error("No userIdHash");
+  if (!newsFeedSessionIOChannelId) throw Error("No newsFeedSessionIOChannelId");
 
-  const streamingInfo = await getStreamingInfo(userIdHash);
-  const newsFeedUrl = await getSessionUrl(
-    streamingInfo.content.newsFeedSessionIOChannelId
-  );
+  const newsFeedUrl = await getSessionUrl(newsFeedSessionIOChannelId);
   const options = {
     reconnection: false,
     forceNew: true,
@@ -398,13 +398,41 @@ export interface TagResponse extends chzzkResponse {
   };
 }
 
-export const getTag = async (_: IpcMainEvent, searchString: string): Promise<TagResponse> => {
+export const getTag = async (
+  _: IpcMainEvent,
+  searchString: string
+): Promise<TagResponse> => {
   if (!searchString)
     return Promise.resolve({ code: 200, content: { keywords: [] } });
 
   return chzzkApiClient(
     `https://api.chzzk.naver.com/service/v1/search/tags/auto-complete?keyword=${searchString}&size=50`,
     {
+      headers: studioHeaders,
+    }
+  );
+};
+
+export type DonationsCommandResponse = chzzkResponse;
+
+export interface DonationsCommand {
+  channelId: string,
+  command: "PLAY" | "STOP" | "IGNORE" | "SKIP",
+  donationId?: string
+}
+
+export const donationsCommand = async (
+  _: IpcMainEvent,
+  { channelId, command, donationId }: DonationsCommand,
+) => {
+  return chzzkApiClient(
+    `https://api.chzzk.naver.com/service/v1/channels/${channelId}/donations/command`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        command,
+        donationId,
+      }),
       headers: studioHeaders,
     }
   );

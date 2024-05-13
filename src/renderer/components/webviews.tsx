@@ -117,7 +117,7 @@ export default function Webviews() {
         </div>
         <Button
           size="icon"
-          className="absolute top-0"
+          className="absolute bottom-0"
           style={{ right: setting.remoteCollapse ? "0" : "220px" }}
           onClick={() => {
             setSetting({remoteCollapse: !setting.remoteCollapse});

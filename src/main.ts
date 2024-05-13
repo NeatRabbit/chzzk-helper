@@ -1,4 +1,11 @@
-import { app, BrowserWindow, ipcMain, session } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  IpcMainEvent,
+  screen,
+  session,
+} from "electron";
 import path from "path";
 import {
   activeSetting,
@@ -12,6 +19,8 @@ import {
   getLiveDetail,
   getNewsFeed,
   getTag,
+  getStreamingInfo,
+  donationsCommand,
 } from "./main/chzzkApi";
 import { updateElectronApp } from "update-electron-app";
 updateElectronApp(); // additional configuration options available
@@ -21,29 +30,17 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
+const gotTheLock = app.requestSingleInstanceLock();
+
 async function logOut() {
   return session.defaultSession.clearStorageData();
 }
 
 const createWindow = () => {
-  ipcMain.handle("getUserStatus", getUserStatus);
-  ipcMain.handle("getDonationsSetting", getDonationsSetting);
-  ipcMain.handle("activeSetting", activeSetting);
-  ipcMain.handle("getLiveSetting", getLiveSetting);
-  ipcMain.handle("getCategory", getCategory);
-  ipcMain.handle("setLiveSetting", setLiveSetting);
-  ipcMain.handle("commandSkip", commandSkip);
-  ipcMain.handle("connectWebsocket", connectWebsocket);
-  ipcMain.handle("logOut", logOut);
-  ipcMain.handle("getLiveDetail", getLiveDetail);
-  ipcMain.handle("getNewsFeed", getNewsFeed);
-  ipcMain.handle("getTag", getTag);
-
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 913,
-    height: 685,
-    // height: 725,
+    height: 710,
     icon: "public/icon.png",
     useContentSize: true,
     title: "치지직 스트리머 도우미",
@@ -71,6 +68,23 @@ const createWindow = () => {
     }
   });
 
+  mainWindow.on("close", () => {
+    mainWindow.webContents.send("saveWindowPosition", mainWindow.getBounds());
+  });
+  mainWindow.on("resized", () => {
+    mainWindow.webContents.send("saveWindowPosition", mainWindow.getBounds());
+  });
+  mainWindow.on("moved", () => {
+    mainWindow.webContents.send("saveWindowPosition", mainWindow.getBounds());
+  });
+
+  app.on("second-instance", () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
@@ -84,29 +98,77 @@ const createWindow = () => {
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
   }
+
+  ipcMain.handle("getUserStatus", getUserStatus);
+  ipcMain.handle("getDonationsSetting", getDonationsSetting);
+  ipcMain.handle("activeSetting", activeSetting);
+  ipcMain.handle("getLiveSetting", getLiveSetting);
+  ipcMain.handle("getCategory", getCategory);
+  ipcMain.handle("setLiveSetting", setLiveSetting);
+  ipcMain.handle("commandSkip", commandSkip);
+  ipcMain.handle("connectWebsocket", connectWebsocket);
+  ipcMain.handle("logOut", logOut);
+  ipcMain.handle("getLiveDetail", getLiveDetail);
+  ipcMain.handle("getNewsFeed", getNewsFeed);
+  ipcMain.handle("getTag", getTag);
+  ipcMain.handle("getStreamingInfo", getStreamingInfo);
+  ipcMain.handle("donationsCommand", donationsCommand);
+  ipcMain.handle(
+    "setWindowPosition",
+    (_event: IpcMainEvent, bounds: Electron.Rectangle) => {
+      setWindowPosition(bounds, mainWindow);
+    }
+  );
 };
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on("ready", createWindow);
+function setWindowPosition(
+  bounds: Electron.Rectangle,
+  mainWindow: BrowserWindow
+) {
+  const screenArea = screen.getDisplayMatching(bounds).workArea;
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
+  if (
+    bounds.x > screenArea.x + screenArea.width ||
+    bounds.x < screenArea.x ||
+    bounds.y < screenArea.y ||
+    bounds.y > screenArea.y + screenArea.height
+  ) {
+    // Reset window into existing screenarea
+    mainWindow.setBounds({
+      width: 913,
+      height: 710,
+    });
+    mainWindow.center();
+  } else {
+    mainWindow.setBounds(bounds);
   }
-});
+}
 
-app.on("activate", () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
+if (!gotTheLock) {
+  app.quit();
+} else {
+  // This method will be called when Electron has finished
+  // initialization and is ready to create browser windows.
+  // Some APIs can only be used after this event occurs.
+  app.on("ready", createWindow);
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+  // Quit when all windows are closed, except on macOS. There, it's common
+  // for applications and their menu bar to stay active until the user quits
+  // explicitly with Cmd + Q.
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
+      app.quit();
+    }
+  });
+
+  app.on("activate", () => {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+
+  // In this file you can include the rest of your app's specific main process
+  // code. You can also put them in separate files and import them here.
+}

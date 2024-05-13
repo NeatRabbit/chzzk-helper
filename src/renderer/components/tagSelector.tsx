@@ -34,7 +34,6 @@ export default function TagSelector({
   const { data: tagData } = useGetTag(search);
 
   useEffect(() => {
-    console.log(tagData);
     setTags(tagData?.content?.keywords || []);
   }, [tagData]);
 
@@ -62,25 +61,34 @@ export default function TagSelector({
           }}
         >
           <CommandInput
-            placeholder="태그 검색 (Ctrl+Enter시에 태그 추가)"
+            placeholder="태그 검색"
             value={search}
             maxLength={15}
             onValueChange={setSearch}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && e.ctrlKey) {
-                onAddTag(search);
-              }
-            }}
           />
           <CommandList>
             <CommandEmpty>검색결과가 없습니다.</CommandEmpty>
             <CommandGroup>
+              {!tags.includes(search) && (
+                <CommandItem
+                  value={search}
+                  onSelect={() => {
+                    onAddTag(search);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  <span>{search}</span>
+                </CommandItem>
+              )}
               {tags.map((tag) => (
                 <CommandItem
                   key={tag}
                   value={tag}
                   onSelect={(currentValue) => {
                     onAddTag(currentValue);
+                    setOpen(false);
+                    setSearch("");
                   }}
                 >
                   <span>{tag}</span>

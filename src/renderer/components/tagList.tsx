@@ -8,12 +8,10 @@ export default function TagList({
   tags: string[];
   onClickRemove?: (tag: string) => void;
 }) {
-  console.log(tags);
-
   return (
     <>
       {tags.map((tag) => (
-        <Badge className="overflow-hidden" title={tag}>
+        <Badge className="overflow-hidden" title={tag} key={tag}>
           <span className="overflow-hidden whitespace-nowrap text-ellipsis flex-1 break-all">
             {tag}
           </span>

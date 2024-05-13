@@ -15,6 +15,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import useUserIdHash from "../electronApi/useUserIdHash";
+
+function* chunkArray<T>(array: T[], chunkSize: number): Generator<T[]> {
+  for (let i = 0; i < array.length; i += chunkSize) {
+    yield array.slice(i, i + chunkSize);
+  }
+}
 
 export default function VideoDonationSwitch() {
   const { data, isLoading } = useDonationsSetting();
@@ -22,54 +29,93 @@ export default function VideoDonationSwitch() {
   const { mutate } = useNewsFeed();
   const [openSave, setOpenSave] = useState(false);
   const [openLoad, setOpenLoad] = useState(false);
-  const filteredData = useRef<NewsFeed[]>([]);
+  const filteredData = useRef<string[]>([]);
+  const {
+    data: {
+      content: { userIdHash },
+    },
+  } = useUserIdHash();
+  const [isActive, setIsActive] = useState<boolean>(null);
 
   const onChangeVideoDonation = async (checked: boolean) => {
+    setIsActive(checked);
+    if (!checked) {
+      const filteredFeedData = await checkNewsFeed();
+
+      if (filteredFeedData.length > 0) {
+        return setOpenSave(true);
+      }
+    } else {
+      const savedData: string[] = JSON.parse(sessionStorage.getItem("newsfeed"));
+      sessionStorage.removeItem("newsfeed");
+
+      if (savedData && savedData.length) {
+        filteredData.current = savedData;
+        return setOpenLoad(true);
+      }
+    }
+    changeVideoDonation(checked);
+  };
+
+  const changeVideoDonation = async (checked?: boolean) => {
     await activeSetting({
-      active: checked,
+      active: checked !== undefined ? checked : isActive,
       donationType: "VIDEO",
     });
-    toast.success(`영상 후원 ${checked ? "ON" : "OFF"}`);
-    // if (!checked) {
-    //   checkNewsFeed();
-    // } else {
-    //   const savedData = JSON.parse(sessionStorage.getItem("newsfeed"));
-    //   sessionStorage.removeItem("newsfeed");
-
-    //   if (savedData && savedData.length) {
-    //     filteredData.current = savedData;
-    //   }
-    //   setOpenLoad(true);
-    // }
-  };
+    toast.success(`영상 후원 ${isActive ? "ON" : "OFF"}`);
+  }
 
   const checkNewsFeed = async () => {
-    filteredData.current = [];
     const newsFeedData = await mutate();
+    const filteredFeedData: NewsFeed[] = [];
 
     newsFeedData.forEach((page) => {
-      page.content.data.forEach((feed) => {
-        if (
-          feed.newsFeedType === "DONATION_VIDEO_CURRENCY" &&
-          !feed.isPlayed &&
-          !feed.isPlaying
-        ) {
-          filteredData.current.push(feed);
-        }
-      });
+      const data =
+        page?.content?.data?.filter(
+          (feed) =>
+            feed.newsFeedType === "DONATION_VIDEO_CURRENCY" &&
+            !feed.isPlayed &&
+            !feed.isPlaying
+        ) || [];
+
+      filteredFeedData.push(...data);
     });
 
-    if (filteredData.current.length > 0) {
-      setOpenSave(true);
-    }
+    return filteredFeedData;
   };
 
-  const saveNewsFeed = () => {
-    sessionStorage.setItem("newsfeed", JSON.stringify(filteredData.current));
-  }
-  const loadNewsFeed = () => {
-    filteredData.current
-  }
+  const saveNewsFeed = async () => {
+    const filteredNewsFeedData = (await checkNewsFeed()).map(newsFeed => newsFeed.donationId).reverse();
+    await stopDonations(filteredNewsFeedData);
+    sessionStorage.setItem("newsfeed", JSON.stringify(filteredNewsFeedData));
+    toast(`영상 후원 ${filteredNewsFeedData.length}건 정지 및 저장`);
+  };
+  const stopDonations = async (donations: string[]) => {
+    const chunkGenerator = chunkArray(donations, 5);
+
+    for (const chunk of chunkGenerator) {
+      await Promise.all(
+        chunk.map((donationId) =>
+          window.electronApi.donationsCommand({
+            channelId: userIdHash,
+            command: "STOP",
+            donationId,
+          })
+        )
+      );
+    }
+    changeVideoDonation();
+  };
+  const loadNewsFeed = async () => {
+    for (const donationId in filteredData.current) {
+      await window.electronApi.donationsCommand({
+        channelId: userIdHash,
+        command: "PLAY",
+        donationId,
+      });
+    }
+    changeVideoDonation();
+  };
 
   return isLoading ? (
     <div>Loading...</div>
@@ -89,13 +135,16 @@ export default function VideoDonationSwitch() {
               남은 영상 후원을 저장하고 정지하시겠습니까?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              영상 후원을 다시 켜면 저장된 영상후원을 재생합니다.<br/>
+              영상 후원을 다시 켜면 저장된 영상후원을 재생합니다.
+              <br />
               (주의: 스트리머 도우미를 종료하면 데이터가 날라갑니다.)
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={saveNewsFeed}>저장 후 정지</AlertDialogAction>
+            <AlertDialogCancel onClick={() => changeVideoDonation()}>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={saveNewsFeed}>
+              저장 후 정지
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -110,7 +159,7 @@ export default function VideoDonationSwitch() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => changeVideoDonation()}>취소</AlertDialogCancel>
             <AlertDialogAction onClick={loadNewsFeed}>재생</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
