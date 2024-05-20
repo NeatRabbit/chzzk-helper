@@ -19,6 +19,12 @@ export default defineConfig((env) => {
         index: path.resolve(__dirname, "index.html"),
         chatCustom: path.resolve(__dirname, "chatCustom.html"),
       },
+      rollupOptions: {
+        input: {
+          index: path.resolve(__dirname, "index.html"),
+          chatCustom: path.resolve(__dirname, "chatCustom.html"),
+        },
+      },
       outDir: `.vite/renderer/${name}`,
     },
     plugins: [pluginExposeRenderer(name), react()],

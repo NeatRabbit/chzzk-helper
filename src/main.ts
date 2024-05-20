@@ -121,6 +121,9 @@ const createWindow = () => {
   mainWindow.on("moved", () => {
     mainWindow.webContents.send("saveWindowPosition", mainWindow.getBounds());
   });
+  mainWindow.on("closed", () => {
+    if (chatCustomWindow) chatCustomWindow.close();
+  });
 
   app.on("second-instance", () => {
     if (mainWindow) {
