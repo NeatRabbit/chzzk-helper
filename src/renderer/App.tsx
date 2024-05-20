@@ -8,6 +8,7 @@ import VideoDonationSwitch from "./components/videoDonationSwitch";
 import LiveSetting from "./components/liveSetting";
 import Menu from "./components/menu";
 import { SettingProvider } from "./components/settingProvider";
+import MissionDonationSwitch from "./components/missionDonationSwitch";
 
 export default function App() {
   const { data, isLoading } = useUserIdHash();
@@ -29,6 +30,7 @@ export default function App() {
               <div className="flex flex-col gap-1 text-nowrap">
                 <ChatDonationSwitch />
                 <VideoDonationSwitch />
+                <MissionDonationSwitch />
               </div>
               <LiveSetting />
             </div>

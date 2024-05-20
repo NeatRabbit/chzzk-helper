@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Pause, SkipForward } from "lucide-react";
-import { useEffect, useState } from "react";
+import { SkipForward } from "lucide-react";
+import { useState, useEffect } from "react";
 import useUserIdHash from "../electronApi/useUserIdHash";
 import { NewsFeed } from "@/main/chzzkApi";
 

@@ -23,13 +23,18 @@ function* chunkArray<T>(array: T[], chunkSize: number): Generator<T[]> {
   }
 }
 
+type FilteredNewsFeedData = Pick<
+  NewsFeed,
+  "donationId" | "message" | "donationText"
+>;
+
 export default function VideoDonationSwitch() {
   const { data, isLoading } = useDonationsSetting();
   const { activeSetting } = useActiveSetting();
   const { mutate } = useNewsFeed();
   const [openSave, setOpenSave] = useState(false);
   const [openLoad, setOpenLoad] = useState(false);
-  const filteredData = useRef<string[]>([]);
+  const filteredData = useRef<FilteredNewsFeedData[]>([]);
   const {
     data: {
       content: { userIdHash },
@@ -46,7 +51,9 @@ export default function VideoDonationSwitch() {
         return setOpenSave(true);
       }
     } else {
-      const savedData: string[] = JSON.parse(sessionStorage.getItem("newsfeed"));
+      const savedData: FilteredNewsFeedData[] = JSON.parse(
+        sessionStorage.getItem("newsfeed")
+      );
       sessionStorage.removeItem("newsfeed");
 
       if (savedData && savedData.length) {
@@ -58,12 +65,14 @@ export default function VideoDonationSwitch() {
   };
 
   const changeVideoDonation = async (checked?: boolean) => {
+    const active = checked !== undefined ? checked : isActive;
+
     await activeSetting({
-      active: checked !== undefined ? checked : isActive,
+      active,
       donationType: "VIDEO",
     });
-    toast.success(`영상 후원 ${isActive ? "ON" : "OFF"}`);
-  }
+    toast.success(`영상 후원 ${active ? "ON" : "OFF"}`);
+  };
 
   const checkNewsFeed = async () => {
     const newsFeedData = await mutate();
@@ -85,17 +94,23 @@ export default function VideoDonationSwitch() {
   };
 
   const saveNewsFeed = async () => {
-    const filteredNewsFeedData = (await checkNewsFeed()).map(newsFeed => newsFeed.donationId).reverse();
+    const filteredNewsFeedData = (await checkNewsFeed())
+      .map(({ donationId, message, donationText }) => ({
+        donationId,
+        message,
+        donationText,
+      }))
+      .reverse();
     await stopDonations(filteredNewsFeedData);
     sessionStorage.setItem("newsfeed", JSON.stringify(filteredNewsFeedData));
     toast(`영상 후원 ${filteredNewsFeedData.length}건 정지 및 저장`);
   };
-  const stopDonations = async (donations: string[]) => {
+  const stopDonations = async (donations: FilteredNewsFeedData[]) => {
     const chunkGenerator = chunkArray(donations, 5);
 
     for (const chunk of chunkGenerator) {
       await Promise.all(
-        chunk.map((donationId) =>
+        chunk.map(({ donationId }) =>
           window.electronApi.donationsCommand({
             channelId: userIdHash,
             command: "STOP",
@@ -107,7 +122,8 @@ export default function VideoDonationSwitch() {
     changeVideoDonation();
   };
   const loadNewsFeed = async () => {
-    for (const donationId in filteredData.current) {
+    for (const donations of filteredData.current) {
+      const { donationId } = donations;
       await window.electronApi.donationsCommand({
         channelId: userIdHash,
         command: "PLAY",
@@ -138,10 +154,14 @@ export default function VideoDonationSwitch() {
               영상 후원을 다시 켜면 저장된 영상후원을 재생합니다.
               <br />
               (주의: 스트리머 도우미를 종료하면 데이터가 날라갑니다.)
+              <br />
+              (해당 기능은 현재 테스트 단계입니다.)
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => changeVideoDonation()}>취소</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => changeVideoDonation()}>
+              취소
+            </AlertDialogCancel>
             <AlertDialogAction onClick={saveNewsFeed}>
               저장 후 정지
             </AlertDialogAction>
@@ -156,10 +176,14 @@ export default function VideoDonationSwitch() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               이전 영상 후원 종료 시 저장한 영상후원을 재생합니다.
+              <br />
+              (해당 기능은 현재 테스트 단계입니다.)
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => changeVideoDonation()}>취소</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => changeVideoDonation()}>
+              취소
+            </AlertDialogCancel>
             <AlertDialogAction onClick={loadNewsFeed}>재생</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

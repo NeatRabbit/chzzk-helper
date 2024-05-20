@@ -4,7 +4,7 @@ import useUserIdHash from "./useUserIdHash";
 const fetcher = ([userIdHash]: [string, string]) => window.electronApi.getDonationsSetting(userIdHash);
 
 export default function useDonationsSetting() {
-  const {data} = useUserIdHash();
+  const {data: {content: {userIdHash}}} = useUserIdHash();
 
-  return useSWR([data.content.userIdHash, "useDonationsSetting"], fetcher);
+  return useSWR([userIdHash, "useDonationsSetting"], fetcher);
 }

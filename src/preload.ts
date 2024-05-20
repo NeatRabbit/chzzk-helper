@@ -67,8 +67,8 @@ const exposes = {
     ipcRenderer.invoke("getLiveDetail", userIdHash),
   getTag: async (searchString: string): Promise<TagResponse> =>
     ipcRenderer.invoke("getTag", searchString),
-  openChatCustomWindow: (chatSourceHash: string) =>
-    ipcRenderer.invoke("openChatCustomWindow", chatSourceHash),
+  openChatCustomWindow: () =>
+    ipcRenderer.invoke("openChatCustomWindow"),
   donationsCommand: async ({
     channelId,
     command,
@@ -81,6 +81,7 @@ const exposes = {
     ),
   setWindowPosition: (bounds: Electron.Rectangle) =>
     ipcRenderer.invoke("setWindowPosition", bounds),
+  clipboardWriteText: (text: string) => ipcRenderer.invoke("clipboardWriteText", text),
 };
 
 contextBridge.exposeInMainWorld("electronApi", exposes);

@@ -20,6 +20,9 @@ export default function Menu() {
     location.href =
       "https://nid.naver.com/nidlogin.login?url=https://chzzk.naver.com/";
   };
+  const openChatCustom = () => {
+    window.electronApi.openChatCustomWindow();
+  };
 
   return (
     <Menubar>
@@ -53,6 +56,12 @@ export default function Menu() {
         </MenubarContent>
       </MenubarMenu>
       <MenuChatmode />
+      <MenubarMenu>
+        <MenubarTrigger>기능</MenubarTrigger>
+        <MenubarContent>
+          <MenubarItem onClick={openChatCustom}>채팅 오버레이 커스텀</MenubarItem>
+        </MenubarContent>
+      </MenubarMenu>
     </Menubar>
   );
 }

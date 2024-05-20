@@ -64,6 +64,7 @@ export interface DonationsSetting extends chzzkResponse {
     chatDonationActive?: boolean;
     subscriptionActive?: boolean;
     videoDonationActive?: boolean;
+    missionDonationActive?: boolean;
   };
 }
 
@@ -83,7 +84,7 @@ export const getDonationsSetting = async (
 
 export interface ActiveSettingOption {
   active: boolean;
-  donationType: "VIDEO" | "CHAT";
+  donationType: "VIDEO" | "CHAT" | "MISSION";
 }
 
 export const activeSetting = async (

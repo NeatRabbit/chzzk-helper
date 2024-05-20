@@ -11,14 +11,15 @@ const getTagFetcher = ([searchString]: [string, string]) =>
   window.electronApi.getTag(encodeURI(searchString));
 
 export default function useLiveSetting() {
-  const { data } = useUserIdHash();
+  const {
+    data: {
+      content: { userIdHash },
+    },
+  } = useUserIdHash();
 
   return {
     useGetLiveSetting: () =>
-      useSWR(
-        [data.content.userIdHash, "useGetLiveSetting"],
-        getLiveSettingFetcher
-      ),
+      useSWR([userIdHash, "useGetLiveSetting"], getLiveSettingFetcher),
     useGetCategory: (searchString: string) =>
       useSWR([searchString, "useGetCategory"], getCategoryFetcher),
     useGetTag: (searchString: string) =>
@@ -47,7 +48,7 @@ export default function useLiveSetting() {
       } = liveSettingData.content;
 
       const { code, content } = await window.electronApi.setLiveSetting(
-        data.content.userIdHash,
+        userIdHash,
         {
           adult,
           liveCategory: category.categoryId,
@@ -66,9 +67,9 @@ export default function useLiveSetting() {
       );
       if (code === 200) {
         mutate({
-          ...data,
+          ...liveSettingData,
           content: {
-            ...data.content,
+            ...liveSettingData.content,
             ...content,
           },
         });

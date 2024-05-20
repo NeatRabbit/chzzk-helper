@@ -7,5 +7,5 @@ const getStreamingInfoFetchter = ([userIdHash]: [string, string]) =>
 export default function useStreamingInfo () {
   const { data } = useUserIdHash();
 
-  return useSWR([data.content.userIdHash, "getStreamingInfo"], getStreamingInfoFetchter);
+  return useSWR([data?.content?.userIdHash, "getStreamingInfo"], getStreamingInfoFetchter);
 }
